@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tour Reservation</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1, h2 {
+      color: #333;
+      text-align: center;
+    }
+    form {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select, textarea, button {
+      padding: 10px;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      margin-top: 5px;
+    }
+    textarea {
+      resize: vertical;
+      height: 80px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    .booking-list {
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .booking-item {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+    .booking-item:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Tour Reservation</h1>
+
+  <form id="reservationForm">
+    <label for="name">Name:</label>
+    <input type="text" id="name" required />
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" required />
+
+    <label for="phone">Phone Number:</label>
+    <input type="tel" id="phone" required />
+
+    <label for="adults">Number of Adults:</label>
+    <input type="number" id="adults" required min="1" />
+
+    <label for="pricePerAdult">Price Per Adult:</label>
+    <input type="number" id="pricePerAdult" required min="1" placeholder="Enter price per adult" />
+
+    <label for="startDate">Start Date:</label>
+    <input type="date" id="startDate" required />
+
+    <label for="endDate">End Date:</label>
+    <input type="date" id="endDate" required />
+
+    <label for="status">Status:</label>
+    <select id="status" required>
+      <option value="Confirmed">Confirmed</option>
+      <option value="Canceled">Canceled</option>
+    </select>
+
+    <label for="notes">Notes:</label>
+    <textarea id="notes" placeholder="Add special notes or requests..."></textarea>
+
+    <button type="submit">Book Tour</button>
+  </form>
+
+  <div class="bookings">
+    <h2>Upcoming Bookings</h2>
+    <div id="bookingList" class="booking-list">
+      <!-- Bookings will appear here -->
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('reservationForm');
+    const bookingList = document.getElementById('bookingList');
+
+    // Load stored bookings from localStorage (if any)
+    let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+
+    // Display stored bookings on page load
+    function displayBookings() {
+      bookingList.innerHTML = ''; // Clear current list
+      bookings.forEach(booking => {
+        const bookingItem = document.createElement('div');
+        bookingItem.className = 'booking-item';
+        bookingItem.innerHTML = `
+          <strong>${booking.name}</strong> (${booking.email}, ${booking.phone})<br>
+          <strong>Status:</strong> ${booking.status}<br>
+          <strong>Tour:</strong> ${booking.start} to ${booking.end}<br>
+          <strong>Adults:</strong> ${booking.adults} <br>
+          <strong>Price:</strong> $${booking.totalPrice} <br>
+          <strong>Notes:</strong> ${booking.notes ? booking.notes : 'None'}
+        `;
+        bookingList.appendChild(bookingItem);
+      });
+    }
+
+    // Display bookings on initial load
+    displayBookings();
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      const adults = document.getElementById('adults').value;
+      const pricePerAdult = document.getElementById('pricePerAdult').value;
+      const start = document.getElementById('startDate').value;
+      const end = document.getElementById('endDate').value;
+      const status = document.getElementById('status').value;
+      const notes = document.getElementById('notes').value;
+
+      // Validate date range
+      if (new Date(end) <= new Date(start)) {
+        alert('End date must be later than the start date.');
+        return;
+      }
+
+      // Check if price is valid
+      if (pricePerAdult <= 0) {
+        alert('Please enter a valid price per adult.');
+        return;
+      }
+
+      // Calculate total price
+      const totalPrice = adults * pricePerAdult;
+
+      // Create new booking object
+      const newBooking = {
+        name,
+        email,
+        phone,
+        adults,
+        start,
+        end,
+        status,
+        notes,
+        totalPrice
+      };
+
+      // Save the booking in the bookings array
+      bookings.push(newBooking);
+
+      // Save the updated bookings array in localStorage
+      localStorage.setItem('bookings', JSON.stringify(bookings));
+
+      // Clear the form
+      form.reset();
+
+      // Re-display bookings
+      displayBookings();
+    });
+  </script>
+
+</body>
+</html>
